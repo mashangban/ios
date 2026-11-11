@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>码上办 · 工牌配置</title>
+<style>
+:root{
+  --bg:#f4f6f8; --card:#ffffff; --text:#12161c; --dim:#6b7480;
+  --line:#e3e8ee; --accent:#0f8f86; --accent2:#e8f5f3;
+  --warn:#b45309; --bad:#c2413b; --ok:#0f7a52;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom))}
+@media (max-width:600px){.wrap{padding-right:30px}}
+h1{font-size:22px;line-height:1.25;margin:4px 0 2px;letter-spacing:.2px}
+.sub{color:var(--dim);font-size:13px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.card h2{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.card h2 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block}
+.status{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.pill{font-size:12px;padding:4px 9px;border-radius:999px;background:#eceff3;color:var(--dim);white-space:nowrap}
+.pill.ok{background:#e6f4ee;color:var(--ok)}
+.pill.bad{background:#fdecea;color:var(--bad)}
+.pill.wait{background:#fff4e5;color:var(--warn)}
+.btn{appearance:none;border:0;border-radius:11px;padding:12px 14px;font-size:15px;font-weight:600;background:var(--accent);color:#fff;width:100%;margin-top:10px}
+.btn:disabled{opacity:.42}
+.btn.ghost{background:var(--accent2);color:var(--accent)}
+.btn.plain{background:#f0f2f5;color:var(--text)}
+.btn.small{width:auto;padding:9px 12px;font-size:14px;margin:0}
+.row{display:flex;gap:8px;align-items:center}
+.row .btn{flex:1}
+label{display:block;font-size:12px;color:var(--dim);margin:10px 0 5px}
+input[type=text],select{width:100%;border:1px solid var(--line);background:#fbfcfd;border-radius:10px;padding:11px 12px;font-size:16px;color:var(--text);outline:none}
+input[type=text]:focus,select:focus{border-color:var(--accent);background:#fff}
+.hint{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.5}
+.warn{color:var(--warn)}
+.bad{color:var(--bad)}
+.ok{color:var(--ok)}
+.avatar{display:flex;gap:12px;align-items:center}
+.avatar canvas{width:96px;height:96px;border-radius:0;border:1px solid var(--line);background:#f2f4f7;flex:none}
+.avatar .meta{font-size:12px;color:var(--dim);min-width:0}
+.file{position:relative;overflow:hidden;display:inline-flex}
+.file input{position:absolute;inset:0;opacity:0;font-size:100px}
+progress{width:100%;height:8px;margin-top:10px;accent-color:var(--accent)}
+.log{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#0f1418;color:#cfeee9;border-radius:10px;padding:10px;max-height:150px;overflow:auto;white-space:pre-wrap}
+details{margin-top:10px}
+summary{font-size:12px;color:var(--dim)}
+hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+.foot{font-size:11px;color:#8a929c;text-align:center;margin-top:18px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>码上办 · 工牌配置</h1>
+  <p class="sub">iPhone 用 Bluefy 打开 · 蓝牙直连 · 不需要 WiFi</p>
+
+  <div class="card">
+    <div class="status">
+      <div><strong>连接状态</strong><div class="hint" id="devName">还没连接</div></div>
+      <span class="pill" id="statePill">未连接</span>
+    </div>
+    <button class="btn" id="btnConnect">连接工牌</button>
+    <button class="btn ghost" id="btnDisconnect" disabled>断开</button>
+    <p class="hint">第一次会弹蓝牙权限，选允许。设备如果正被安卓 App 连着，先在安卓上断开或关蓝牙，否则 iPhone 连不上。搜不到时，长按「连接工牌」列出全部 BLE 设备。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>工牌资料</h2>
+    <label for="p0">第一行 · 姓名</label>
+    <input id="p0" type="text" maxlength="10" autocomplete="off" placeholder="你的名字">
+    <label for="p1">第二行 · 职位 / 部门</label>
+    <input id="p1" type="text" maxlength="10" autocomplete="off" placeholder="职位 / 部门">
+    <label for="p2">第三行 · 公司 / 联系方式</label>
+    <input id="p2" type="text" maxlength="10" autocomplete="off" placeholder="公司 / 联系方式">
+    <button class="btn" id="btnProfile">保存三行资料</button>
+    <p class="hint">每行最多 10 个字，和安卓 App 的限制一致；清空后保存会清掉设备上对应那一行。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>工牌头像</h2>
+    <div class="avatar">
+      <canvas id="preview" width="96" height="96"></canvas>
+      <div class="meta" id="avatarMeta">还没选图。选一张照片，页面会居中裁成 96×96 再发。</div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label class="btn plain file" style="margin:0">选择照片
+        <input id="file" type="file" accept="image/*">
+      </label>
+    </div>
+    <button class="btn" id="btnAvatar" disabled>发送头像到工牌</button>
+    <progress id="avatarBar" value="0" max="100" style="display:none"></progress>
+    <p class="hint">发送约 20 秒，期间不要锁屏、不要切走 Bluefy。设备收到后会用照片替换姓名首字。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>城市 · 天气 · 空气 · 时间</h2>
+    <label for="city">城市</label>
+    <select id="city"></select>
+    <button class="btn" id="btnWeather">同步天气 / 空气 / 时间</button>
+    <button class="btn ghost" id="btnTime">只对时</button>
+    <p class="hint">天气和空气由这台 iPhone 联网取，时间用手机当前时间，全部通过蓝牙写给设备。设备不连 WiFi。<br>当前固件只显示今天；明天/后天仍是「待同步」。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>日志</h2>
+    <div class="log" id="log">等待操作…</div>
+    <details>
+      <summary>协议与限制</summary>
+      <p class="hint">服务 7c5a1001-…；写特征 7c5a1002-…；帧版本 3；资料/天气/头像均走一次 BLE 写，设备端不做分片重组。头像按 100 字节原始像素分块，共 185 帧。页面本身不上传任何资料，只请求 Open-Meteo 取天气。</p>
+    </details>
+  </div>
+
+  <p class="foot">码上办 / MaShangBan — Pocket Toolbox · iOS 配置页<br>Bluefy 是 App Store 的 Web Bluetooth 浏览器；Safari 不支持。</p>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const SERVICE = '7c5a1001-3e4b-4f2a-9d6c-1a2b3c4d5e6f';
+  const RX      = '7c5a1002-3e4b-4f2a-9d6c-1a2b3c4d5e6f';
+
+  const OP_PROFILE_LINE = 12;
+  const OP_WEATHER      = 15;
+  const OP_SKY          = 16;
+  const OP_PORTRAIT     = 18;
+
+  const CITIES = [
+    ['北京', 39.90, 116.41], ['上海', 31.23, 121.47], ['广州', 23.13, 113.26],
+    ['深圳', 22.54, 114.06], ['杭州', 30.27, 120.16], ['南京', 32.06, 118.80],
+    ['苏州', 31.30, 120.62], ['成都', 30.57, 104.07], ['重庆', 29.56, 106.55],
+    ['武汉', 30.59, 114.31], ['西安', 34.34, 108.94], ['天津', 39.13, 117.20],
+    ['长沙', 28.23, 112.94], ['郑州', 34.75, 113.63], ['青岛', 36.07, 120.38],
+    ['大连', 38.91, 121.61], ['厦门', 24.48, 118.09], ['福州', 26.07, 119.30],
+    ['昆明', 25.04, 102.71], ['贵阳', 26.65, 106.63], ['南宁', 22.82, 108.37],
+    ['海口', 20.04, 110.32], ['合肥', 31.86, 117.28], ['济南', 36.65, 117.12],
+    ['沈阳', 41.81, 123.43]
+  ];
+
+  const el = (id) => document.getElementById(id);
+  const statePill = el('statePill');
+  const devName = el('devName');
+  const logBox = el('log');
+  const btnConnect = el('btnConnect');
+  const btnDisconnect = el('btnDisconnect');
+  const btnProfile = el('btnProfile');
+  const btnAvatar = el('btnAvatar');
+  const btnWeather = el('btnWeather');
+  const btnTime = el('btnTime');
+  const fileInput = el('file');
+  const preview = el('preview');
+  const avatarMeta = el('avatarMeta');
+  const avatarBar = el('avatarBar');
+  const citySel = el('city');
+
+  let device = null;
+  let rxChar = null;
+  let queue = Promise.resolve();
+  let connected = false;
+  let avatarBytes = null;
+
+  CITIES.forEach(([name], i) => {
+    const o = document.createElement('option');
+    o.value = String(i); o.textContent = name;
+    citySel.appendChild(o);
+  });
+  citySel.value = '3';
+
+  function log(msg, kind) {
+    const t = new Date().toTimeString().slice(0, 8);
+    const line = `[${t}] ${msg}`;
+    logBox.textContent = line + '\n' + logBox.textContent;
+    const lines = logBox.textContent.split('\n');
+    if (lines.length > 60) logBox.textContent = lines.slice(0, 60).join('\n');
+    if (kind === 'bad') console.warn(msg); else console.log(msg);
+  }
+
+  function setState(text, kind) {
+    statePill.textContent = text;
+    statePill.className = 'pill' + (kind ? ' ' + kind : '');
+  }
+
+  function setConnected(on, name) {
+    connected = !!on;
+    btnConnect.disabled = on;
+    btnDisconnect.disabled = !on;
+    btnProfile.disabled = !on;
+    btnAvatar.disabled = !on || !avatarBytes;
+    btnWeather.disabled = !on;
+    btnTime.disabled = !on;
+    if (on) {
+      setState('已连接', 'ok');
+      devName.textContent = name || '码上办工牌';
+    } else {
+      setState('未连接', 'bad');
+      devName.textContent = '还没连接';
+      rxChar = null;
+    }
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function enqueue(fn) {
+    const run = queue.then(fn, fn);
+    queue = run.catch(() => {});
+    return run;
+  }
+
+  function buildFrame(op, arg, text) {
+    const enc = new TextEncoder();
+    const tb = text ? enc.encode(text) : new Uint8Array(0);
+    const total = 8 + (tb.length ? 3 + tb.length : 0);
+    if (total > 180) throw new Error(`帧太长：${total} 字节`);
+    const b = new Uint8Array(total);
+    b[0] = 3;              // VER3
+    b[1] = op;
+    // uid 2..5 默认 0
+    b[6] = arg & 0xFF;
+    b[7] = (arg >> 8) & 0xFF;
+    if (tb.length) {
+      b[8] = 1;            // TLV type 1 = text
+      b[9] = tb.length & 0xFF;
+      b[10] = (tb.length >> 8) & 0xFF;
+      b.set(tb, 11);
+    }
+    return b;
+  }
+
+  async function writeFrame(bytes) {
+    if (!rxChar) throw new Error('还没连接工牌');
+    // Bluefy / iOS 上不同版本暴露的方法不一样，按能力依次退。
+    let lastErr = null;
+    if (typeof rxChar.writeValueWithoutResponse === 'function') {
+      try { await rxChar.writeValueWithoutResponse(bytes); lastErr = null; }
+      catch (e) { lastErr = e; }
+    }
+    if (lastErr && typeof rxChar.writeValueWithResponse === 'function') {
+      try { await rxChar.writeValueWithResponse(bytes); lastErr = null; }
+      catch (e) { lastErr = e; }
+    }
+    if (lastErr && typeof rxChar.writeValue === 'function') {
+      try { await rxChar.writeValue(bytes); lastErr = null; }
+      catch (e) { lastErr = e; }
+    }
+    if (lastErr) throw lastErr;
+    await sleep(45);
+  }
+
+  function send(op, arg, text) {
+    return enqueue(async () => {
+      const f = buildFrame(op, arg, text || '');
+      await writeFrame(f);
+      log(`写入 op=${op} arg=${arg} len=${f.length}${text ? ' · ' + text.slice(0, 36) : ''}`);
+      return f;
+    });
+  }
+
+  async function connect(useAll) {
+    if (!navigator.bluetooth) {
+      throw new Error('这个浏览器不支持 Web Bluetooth。请用 Bluefy 打开，Safari 不行。');
+    }
+    const opts = useAll
+      ? { acceptAllDevices: true, optionalServices: [SERVICE] }
+      : { filters: [{ namePrefix: 'MaShangBan' }], optionalServices: [SERVICE] };
+    log(useAll ? '列出全部 BLE 设备…' : '搜索 MaShangBan…');
+    device = await navigator.bluetooth.requestDevice(opts);
+    device.addEventListener('gattserverdisconnected', () => {
+      log('连接断开', 'bad');
+      setConnected(false);
+    });
+    log(`选中：${device.name || '(无名)'}`);
+    const server = await device.gatt.connect();
+    const svc = await server.getPrimaryService(SERVICE);
+    rxChar = await svc.getCharacteristic(RX);
+    setConnected(true, device.name || '码上办工牌');
+    log('已连上，服务与写特征就绪');
+  }
+
+  let suppressClick = false;
+  btnConnect.addEventListener('click', async () => {
+    if (suppressClick) { suppressClick = false; return; }
+    btnConnect.disabled = true;
+    setState('连接中…', 'wait');
+    try {
+      await connect(false);
+    } catch (e) {
+      log('连接失败：' + (e.message || e), 'bad');
+      setConnected(false);
+      if (String(e.message || e).includes('No device') || String(e.message || e).includes('not found')) {
+        log('没搜到。可以点下面的「列出全部设备」再试。', 'bad');
+      }
+      btnConnect.disabled = false;
+    }
+  });
+
+  btnDisconnect.addEventListener('click', () => {
+    try { if (device && device.gatt.connected) device.gatt.disconnect(); } catch (_) {}
+    setConnected(false);
+    log('已主动断开');
+  });
+
+  async function saveProfile() {
+    const lines = [el('p0').value, el('p1').value, el('p2').value].map(s => s.trim());
+    for (let i = 0; i < 3; i++) {
+      await send(OP_PROFILE_LINE, i, lines[i]);
+    }
+    log('三行资料已发送；工牌会立即重绘');
+  }
+
+  btnProfile.addEventListener('click', async () => {
+    if (!connected) return;
+    btnProfile.disabled = true;
+    try { await saveProfile(); }
+    catch (e) { log('资料发送失败：' + (e.message || e), 'bad'); }
+    finally { btnProfile.disabled = false; }
+  });
+
+  function drawPreview(img) {
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const sx = (img.naturalWidth - side) / 2;
+    const sy = (img.naturalHeight - side) / 2;
+    const ctx = preview.getContext('2d', { willReadFrequently: true });
+    ctx.clearRect(0, 0, 96, 96);
+    ctx.drawImage(img, sx, sy, side, side, 0, 0, 96, 96);
+    const data = ctx.getImageData(0, 0, 96, 96).data;
+    const raw = new Uint8Array(96 * 96 * 2);
+    let p = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      const v = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+      raw[p++] = v & 0xFF;
+      raw[p++] = (v >> 8) & 0xFF;
+    }
+    avatarBytes = raw;
+    avatarMeta.textContent = `已裁成 96×96，RGB565 共 ${raw.length.toLocaleString()} 字节，分 ${Math.ceil(raw.length / 100)} 帧发送。`;
+    btnAvatar.disabled = !connected;
+    log('头像预览就绪');
+  }
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try { drawPreview(img); }
+      catch (e) { log('图片处理失败：' + (e.message || e), 'bad'); }
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      log('这张图读不出来，换 JPG/PNG 试试', 'bad');
+    };
+    img.src = url;
+  });
+
+  function b64(bytes) {
+    let s = '';
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  }
+
+  async function sendAvatar() {
+    if (!avatarBytes) throw new Error('还没选头像');
+    const total = Math.ceil(avatarBytes.length / 100);
+    avatarBar.style.display = 'block';
+    avatarBar.value = 0;
+    avatarBar.max = total;
+    for (let i = 0; i < total; i++) {
+      const from = i * 100;
+      const chunk = avatarBytes.subarray(from, Math.min(avatarBytes.length, from + 100));
+      await send(OP_PORTRAIT, 0, `${i},${total},${b64(chunk)}`);
+      avatarBar.value = i + 1;
+      if (i % 20 === 0) avatarMeta.textContent = `正在发送 ${i + 1}/${total} 帧…`;
+    }
+    avatarMeta.textContent = `头像 ${total} 帧已发完。设备收到后会用照片替换姓名首字。`;
+    log('头像发送完成');
+  }
+
+  btnAvatar.addEventListener('click', async () => {
+    if (!connected || !avatarBytes) return;
+    btnAvatar.disabled = true;
+    try { await sendAvatar(); }
+    catch (e) { log('头像发送失败：' + (e.message || e), 'bad'); }
+    finally { btnAvatar.disabled = false; avatarBar.style.display = 'none'; }
+  });
+
+  // 固件把 s_clock 当“本地墙钟”存，再用 gmtime 拆时分（见 app_ui.c 注释）。
+  // 所以这里要送“UTC 字段等于本地时间”的秒数，不能直接送 Date.now()/1000。
+  function deviceEpoch() {
+    const d = new Date();
+    return Math.floor(Date.UTC(
+      d.getFullYear(), d.getMonth(), d.getDate(),
+      d.getHours(), d.getMinutes(), d.getSeconds()
+    ) / 1000);
+  }
+
+  function minuteOf(iso) {
+    const hm = String(iso || '').split('T')[1] || '';
+    const parts = hm.slice(0, 5).split(':');
+    const h = parseInt(parts[0], 10), m = parseInt(parts[1], 10);
+    return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : -1;
+  }
+
+  function weatherCond(code) {
+    if (code === 0) return 0;
+    if ([1, 2, 3, 45, 48].includes(code)) return 1;
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return 3;
+    if ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code)) return 2;
+    return 1;
+  }
+
+  async function fetchJson(url, ms) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), ms || 10000);
+    try {
+      const r = await fetch(url, { cache: 'no-store', signal: ctl.signal });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function syncWeather() {
+    const idx = parseInt(citySel.value, 10);
+    const [name, lat, lon] = CITIES[idx];
+    log(`取 ${name} 天气…`);
+    const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset` +
+      `&timezone=Asia%2FShanghai&forecast_days=1`;
+    const w = await fetchJson(wUrl, 10000);
+    const temp = Math.round(w.current.temperature_2m);
+    const cond = weatherCond(w.current.weather_code);
+    const hi = Math.round(w.daily.temperature_2m_max[0]);
+    const lo = Math.round(w.daily.temperature_2m_min[0]);
+    const rise = minuteOf(w.daily.sunrise[0]);
+    const set = minuteOf(w.daily.sunset[0]);
+    let aqi = 0;
+    try {
+      const aj = await fetchJson(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}` +
+        `&longitude=${lon}&current=us_aqi&timezone=Asia%2FShanghai`, 7000);
+      aqi = Math.round(aj.current.us_aqi || 0);
+    } catch (_) { aqi = 0; }
+    const epoch = deviceEpoch();
+    await send(OP_WEATHER, 0, `${idx},${temp},${cond},${aqi},${hi},${lo}`);
+    await send(OP_SKY, 0, `${epoch},${rise},${set}`);
+    log(`${name} 已同步：${temp}° ${hi}°/${lo}° AQI ${aqi} 日出 ${rise} 日落 ${set}`);
+  }
+
+  btnWeather.addEventListener('click', async () => {
+    if (!connected) return;
+    btnWeather.disabled = true;
+    const label = btnWeather.textContent;
+    btnWeather.textContent = '同步中…';
+    try { await syncWeather(); }
+    catch (e) {
+      log('天气同步失败：' + (e.message || e), 'bad');
+      try {
+        const epoch = deviceEpoch();
+        await send(OP_SKY, 0, `${epoch},-1,-1`);
+        log('天气失败，但已单独对时');
+      } catch (e2) { log('对时也失败：' + (e2.message || e2), 'bad'); }
+    }
+    finally { btnWeather.disabled = false; btnWeather.textContent = label; }
+  });
+
+  btnTime.addEventListener('click', async () => {
+    if (!connected) return;
+    btnTime.disabled = true;
+    const label = btnTime.textContent;
+    btnTime.textContent = '对时中…';
+    try {
+      const epoch = deviceEpoch();
+      await send(OP_SKY, 0, `${epoch},-1,-1`);
+      log('已用手机时间对时');
+    } catch (e) { log('对时失败：' + (e.message || e), 'bad'); }
+    finally { btnTime.disabled = false; btnTime.textContent = label; }
+  });
+
+  // 没搜到时给一个列出全部设备的入口（长按连接按钮触发）。
+  let holdTimer = 0;
+  btnConnect.addEventListener('pointerdown', () => {
+    holdTimer = setTimeout(async () => {
+      if (!navigator.bluetooth) return;
+      suppressClick = true;
+      try {
+        btnConnect.disabled = true;
+        setState('列出全部设备…', 'wait');
+        await connect(true);
+      } catch (e) {
+        log('列出全部设备失败：' + (e.message || e), 'bad');
+        setConnected(false);
+        btnConnect.disabled = false;
+      }
+    }, 700);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev =>
+    btnConnect.addEventListener(ev, () => clearTimeout(holdTimer))
+  );
+
+  setConnected(false);
+  log('页面就绪；先点「连接工牌」');
+})();
+</script>
+</body>
+</html>
