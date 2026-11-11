@@ -73,7 +73,7 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     </div>
     <button class="btn" id="btnConnect">连接工牌</button>
     <button class="btn ghost" id="btnDisconnect" disabled>断开</button>
-    <p class="hint">第一次会弹蓝牙权限，选允许。设备如果正被安卓 App 连着，先在安卓上断开或关蓝牙，否则 iPhone 连不上。搜不到时，长按「连接工牌」列出全部 BLE 设备。</p>
+    <p class="hint">第一次会弹蓝牙权限，选允许。设备如果正被安卓 App 连着，先在安卓上断开或关蓝牙，否则 iPhone 连不上。设备名可能是 `MaShangBan-1.5` 或 `AI Passport`。搜不到时，长按「连接工牌」列出全部 BLE 设备。</p>
   </div>
 
   <div class="card">
@@ -301,8 +301,12 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     }
     const opts = useAll
       ? { acceptAllDevices: true, optionalServices: [SERVICE] }
-      : { filters: [{ namePrefix: 'MaShangBan' }], optionalServices: [SERVICE] };
-    log(useAll ? '列出全部 BLE 设备…' : '搜索 MaShangBan…');
+      : { filters: [
+          { namePrefix: 'MaShangBan' },
+          { namePrefix: 'AI Passport' },
+          { namePrefix: 'AI' }
+        ], optionalServices: [SERVICE] };
+    log(useAll ? '列出全部 BLE 设备…' : '搜索 MaShangBan / AI Passport…');
     device = await navigator.bluetooth.requestDevice(opts);
     device.addEventListener('gattserverdisconnected', () => {
       log('连接断开', 'bad');
