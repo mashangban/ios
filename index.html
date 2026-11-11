@@ -49,12 +49,22 @@ details{margin-top:10px}
 summary{font-size:12px;color:var(--dim)}
 hr{border:0;border-top:1px solid var(--line);margin:12px 0}
 .foot{font-size:11px;color:#8a929c;text-align:center;margin-top:18px;line-height:1.6}
+.link{appearance:none;border:0;background:none;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(15,20,24,.45)}
+.modal.show{display:flex}
+.modal-card{width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22);overflow:hidden}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.modal-head h3{margin:0;font-size:16px}
+.modal-close{appearance:none;border:0;width:32px;height:32px;border-radius:9px;background:#f0f2f5;color:var(--text);font-size:18px;line-height:1}
+.modal-body{padding:14px 16px 18px;overflow:auto;font-size:14px;line-height:1.65;color:#3b434d}
+.modal-body h4{font-size:14px;margin:14px 0 4px;color:var(--text)}
+.modal-body p{margin:0 0 8px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>码上办 · 工牌配置</h1>
-  <p class="sub">iPhone 用 Bluefy 打开 · 蓝牙直连 · 不需要 WiFi</p>
+  <p class="sub">iPhone 用 Bluefy 打开 · 蓝牙直连 · 不需要 WiFi<br><button type="button" class="link" id="btnPrivacy">隐私政策</button></p>
 
   <div class="card">
     <div class="status">
@@ -115,6 +125,31 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
   <p class="foot">码上办 / MaShangBan — Pocket Toolbox · iOS 配置页<br>Bluefy 是 App Store 的 Web Bluetooth 浏览器；Safari 不支持。</p>
 </div>
 
+<div class="modal" id="privacyModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <div class="modal-head">
+      <h3 id="privacyTitle">隐私政策</h3>
+      <button type="button" class="modal-close" id="btnPrivacyClose" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <p>本页是「码上办」的 iPhone 蓝牙配置页，更新日期：2026-11-11。它只负责把你在页面上填写的内容通过蓝牙写到你自己配对的设备，不建立账号，也不把资料上传到我们的服务器。</p>
+      <h4>一、页面会处理哪些信息</h4>
+      <p>· 工牌资料：姓名、职位/部门、公司/联系方式，最多三行。只在页面内存中处理，点保存后通过蓝牙发到设备。</p>
+      <p>· 工牌头像：只有你主动选择照片时才读取你选的那一张；在手机本地居中裁成 96×96，再通过蓝牙分帧发到设备，不上传。</p>
+      <p>· 天气与空气：只有你点「同步天气」时，页面才用所选城市的经纬度向 Open-Meteo 请求天气和空气质量，再把结果写到设备；不发送姓名、头像或其他页面内容。</p>
+      <p>· 时间：只读取手机当前时间，用于给设备对时。</p>
+      <h4>二、不处理的信息</h4>
+      <p>页面不读取通知、短信、联系人、通话记录、相册、摄像头、定位或键盘输入；没有登录、没有 Cookie、没有广告、没有统计 SDK，也不保存你的填写内容。</p>
+      <h4>三、托管与访问日志</h4>
+      <p>本页由 GitHub Pages 静态托管。GitHub 可能按自身政策记录访问日志（如 IP、浏览器类型），用于安全与运行统计；本页本身不接入任何统计工具。</p>
+      <h4>四、你的选择</h4>
+      <p>你可以随时不填写、不发送；关闭页面即停止本次操作。设备上的资料和头像可用安卓 App 或本页重新覆盖；清除设备数据请按设备端说明操作。对隐私有疑问，可在社区玩法评论区留言。</p>
+      <p>本页不面向 13 岁以下儿童。页面或固件更新时，本政策会同步更新。</p>
+    </div>
+  </div>
+</div>
+</div>
+
 <script>
 (() => {
   'use strict';
@@ -154,6 +189,9 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
   const avatarMeta = el('avatarMeta');
   const avatarBar = el('avatarBar');
   const citySel = el('city');
+  const privacyModal = el('privacyModal');
+  const btnPrivacy = el('btnPrivacy');
+  const btnPrivacyClose = el('btnPrivacyClose');
 
   let device = null;
   let rxChar = null;
@@ -500,6 +538,19 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
   ['pointerup','pointercancel','pointerleave'].forEach(ev =>
     btnConnect.addEventListener(ev, () => clearTimeout(holdTimer))
   );
+
+  const closePrivacy = () => {
+    privacyModal.classList.remove('show');
+    privacyModal.setAttribute('aria-hidden', 'true');
+  };
+  btnPrivacy.addEventListener('click', () => {
+    privacyModal.classList.add('show');
+    privacyModal.setAttribute('aria-hidden', 'false');
+  });
+  btnPrivacyClose.addEventListener('click', closePrivacy);
+  privacyModal.addEventListener('click', (e) => {
+    if (e.target === privacyModal) closePrivacy();
+  });
 
   setConnected(false);
   log('页面就绪；先点「连接工牌」');
