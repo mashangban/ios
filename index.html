@@ -32,8 +32,8 @@ h1{font-size:22px;line-height:1.25;margin:4px 0 2px;letter-spacing:.2px}
 .row{display:flex;gap:8px;align-items:center}
 .row .btn{flex:1}
 label{display:block;font-size:12px;color:var(--dim);margin:10px 0 5px}
-input[type=text],select{width:100%;border:1px solid var(--line);background:#fbfcfd;border-radius:10px;padding:11px 12px;font-size:16px;color:var(--text);outline:none}
-input[type=text]:focus,select:focus{border-color:var(--accent);background:#fff}
+input[type=text],input[type=date],select{width:100%;border:1px solid var(--line);background:#fbfcfd;border-radius:10px;padding:11px 12px;font-size:16px;color:var(--text);outline:none}
+input[type=text]:focus,input[type=date]:focus,select:focus{border-color:var(--accent);background:#fff}
 .hint{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.5}
 .warn{color:var(--warn)}
 .bad{color:var(--bad)}
@@ -85,7 +85,7 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     <label for="p2">第三行 · 公司 / 联系方式</label>
     <input id="p2" type="text" maxlength="10" autocomplete="off" placeholder="公司 / 联系方式">
     <button class="btn" id="btnProfile">保存三行资料</button>
-    <p class="hint">每行最多 10 个字，和安卓 App 的限制一致；清空后保存会清掉设备上对应那一行。</p>
+    <p class="hint">每行最多 10 个字，和安卓 App 的限制一致；清空后保存会清掉设备上对应那一行。设备「我的信息」页短按 OK 会显示由这三行生成的联系人二维码，手机扫码即可保存 vCard。</p>
   </div>
 
   <div class="card">
@@ -110,7 +110,36 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     <select id="city"></select>
     <button class="btn" id="btnWeather">同步天气 / 空气 / 时间</button>
     <button class="btn ghost" id="btnTime">只对时</button>
-    <p class="hint">天气和空气由这台 iPhone 联网取，时间用手机当前时间，全部通过蓝牙写给设备。设备不连 WiFi。<br>当前固件只显示今天；明天/后天仍是「待同步」。</p>
+    <p class="hint">天气和空气由这台 iPhone 联网取，时间用手机当前时间，全部通过蓝牙写给设备。设备不连 WiFi。<br>现在会同步今天、明天、后天共三天；空气按天取值，今天用实时值。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>免打扰 · 倒数日</h2>
+    <label for="dndPreset">免打扰时段</label>
+    <select id="dndPreset">
+      <option value="0,22,7">关</option>
+      <option value="1,22,7">22:00–07:00</option>
+      <option value="1,23,8">23:00–08:00</option>
+      <option value="1,0,6">00:00–06:00</option>
+      <option value="1,1,7">01:00–07:00</option>
+    </select>
+    <button class="btn" id="btnDnd" disabled>下发免打扰</button>
+    <p class="hint">只影响工牌的提示音和弹窗，通知仍会记录；不会改 iPhone 系统勿扰。</p>
+    <hr>
+    <label for="cd0n">倒数日 1 · 名称</label>
+    <input id="cd0n" type="text" maxlength="10" autocomplete="off" placeholder="例如：生日、年会">
+    <label for="cd0d">倒数日 1 · 日期</label>
+    <input id="cd0d" type="date">
+    <label for="cd1n">倒数日 2 · 名称</label>
+    <input id="cd1n" type="text" maxlength="10" autocomplete="off" placeholder="可留空">
+    <label for="cd1d">倒数日 2 · 日期</label>
+    <input id="cd1d" type="date">
+    <label for="cd2n">倒数日 3 · 名称</label>
+    <input id="cd2n" type="text" maxlength="10" autocomplete="off" placeholder="可留空">
+    <label for="cd2d">倒数日 3 · 日期</label>
+    <input id="cd2d" type="date">
+    <button class="btn" id="btnCountdown" disabled>保存倒数日</button>
+    <p class="hint">设备只算「还有几天 / 就是今天 / 已过几天」，不改手机日历；名称和日期只在页面内存中处理，点保存才写到工牌。</p>
   </div>
 
   <div class="card">
@@ -132,12 +161,13 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
       <button type="button" class="modal-close" id="btnPrivacyClose" aria-label="关闭">×</button>
     </div>
     <div class="modal-body">
-      <p>本页是「码上办」的 iPhone 蓝牙配置页，更新日期：2026-11-11。它只负责把你在页面上填写的内容通过蓝牙写到你自己配对的设备，不建立账号，也不把资料上传到我们的服务器。</p>
+      <p>本页是「码上办」的 iPhone 蓝牙配置页，更新日期：2026-11-12。它只负责把你在页面上填写的内容通过蓝牙写到你自己配对的设备，不建立账号，也不把资料上传到我们的服务器。</p>
       <h4>一、页面会处理哪些信息</h4>
       <p>· 工牌资料：姓名、职位/部门、公司/联系方式，最多三行。只在页面内存中处理，点保存后通过蓝牙发到设备。</p>
       <p>· 工牌头像：只有你主动选择照片时才读取你选的那一张；在手机本地居中裁成 96×96，再通过蓝牙分帧发到设备，不上传。</p>
-      <p>· 天气与空气：只有你点「同步天气」时，页面才用所选城市的经纬度向 Open-Meteo 请求天气和空气质量，再把结果写到设备；不发送姓名、头像或其他页面内容。</p>
+      <p>· 天气与空气：只有你点「同步天气」时，页面才用所选城市的经纬度向 Open-Meteo 请求未来三天天气和逐日空气质量，再把结果写到设备；不发送姓名、头像或其他页面内容。</p>
       <p>· 时间：只读取手机当前时间，用于给设备对时。</p>
+      <p>· 设备设置：免打扰时段、倒数日名称和日期，只在页面内存中处理，点保存后通过蓝牙写到设备，不上传。</p>
       <h4>二、不处理的信息</h4>
       <p>页面不读取通知、短信、联系人、通话记录、相册、摄像头、定位或键盘输入；没有登录、没有 Cookie、没有广告、没有统计 SDK，也不保存你的填写内容。</p>
       <h4>三、托管与访问日志</h4>
@@ -161,6 +191,9 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
   const OP_WEATHER      = 15;
   const OP_SKY          = 16;
   const OP_PORTRAIT     = 18;
+  const OP_DND          = 21;
+  const OP_COUNTDOWN    = 22;
+  const OP_WEATHER3     = 23;
 
   const CITIES = [
     ['北京', 39.90, 116.41], ['上海', 31.23, 121.47], ['广州', 23.13, 113.26],
@@ -184,6 +217,9 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
   const btnAvatar = el('btnAvatar');
   const btnWeather = el('btnWeather');
   const btnTime = el('btnTime');
+  const btnDnd = el('btnDnd');
+  const btnCountdown = el('btnCountdown');
+  const dndPreset = el('dndPreset');
   const fileInput = el('file');
   const preview = el('preview');
   const avatarMeta = el('avatarMeta');
@@ -228,6 +264,8 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     btnAvatar.disabled = !on || !avatarBytes;
     btnWeather.disabled = !on;
     btnTime.disabled = !on;
+    btnDnd.disabled = !on;
+    btnCountdown.disabled = !on;
     if (on) {
       setState('已连接', 'ok');
       devName.textContent = name || '码上办工牌';
@@ -313,9 +351,34 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
       setConnected(false);
     });
     log(`选中：${device.name || '(无名)'}`);
-    const server = await device.gatt.connect();
-    const svc = await server.getPrimaryService(SERVICE);
-    rxChar = await svc.getCharacteristic(RX);
+    let server;
+    try {
+      server = await device.gatt.connect();
+    } catch (e) {
+      log(`GATT 连接失败：name=${e.name || '?'} code=${e.code || '?'} msg=${e.message || e}`, 'bad');
+      throw e;
+    }
+    log('GATT 已连接');
+    let svc;
+    try {
+      svc = await server.getPrimaryService(SERVICE);
+    } catch (e) {
+      log(`找不到服务 ${SERVICE}：name=${e.name || '?'} code=${e.code || '?'} msg=${e.message || e}`, 'bad');
+      try {
+        const all = await server.getPrimaryServices();
+        log('设备服务列表：' + all.map(s => s.uuid).join(' | '), 'bad');
+      } catch (e2) {
+        log('枚举服务也失败：' + (e2.message || e2), 'bad');
+      }
+      throw e;
+    }
+    log('服务已找到');
+    try {
+      rxChar = await svc.getCharacteristic(RX);
+    } catch (e) {
+      log(`找不到写特征 ${RX}：name=${e.name || '?'} code=${e.code || '?'} msg=${e.message || e}`, 'bad');
+      throw e;
+    }
     setConnected(true, device.name || '码上办工牌');
     log('已连上，服务与写特征就绪');
   }
@@ -357,6 +420,51 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     try { await saveProfile(); }
     catch (e) { log('资料发送失败：' + (e.message || e), 'bad'); }
     finally { btnProfile.disabled = false; }
+  });
+
+  function localEpochDay(text) {
+    const parts = text.split('-').map(Number);
+    if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+      throw new Error('日期要填完整（YYYY-MM-DD）');
+    }
+    return Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000);
+  }
+
+  async function saveDnd() {
+    const [on, from, to] = dndPreset.value.split(',').map(Number);
+    await send(OP_DND, 0, `${on},${from},${to}`);
+    log('免打扰已下发；通知仍会记录，只压提示音和弹窗');
+  }
+
+  async function saveCountdown() {
+    for (let i = 0; i < 3; i++) {
+      const name = el(`cd${i}n`).value.trim();
+      const date = el(`cd${i}d`).value.trim();
+      if (!name && !date) {
+        await send(OP_COUNTDOWN, 0, `${i},0,`);
+        continue;
+      }
+      if (!name || !date) throw new Error(`倒数日 ${i + 1} 名称和日期要同时填`);
+      const day = localEpochDay(date);
+      await send(OP_COUNTDOWN, 0, `${i},${day},${name}`);
+    }
+    log('倒数日已发送；工牌按本机日期计算剩余天数');
+  }
+
+  btnDnd.addEventListener('click', async () => {
+    if (!connected) return;
+    btnDnd.disabled = true;
+    try { await saveDnd(); }
+    catch (e) { log('免打扰发送失败：' + (e.message || e), 'bad'); }
+    finally { btnDnd.disabled = false; }
+  });
+
+  btnCountdown.addEventListener('click', async () => {
+    if (!connected) return;
+    btnCountdown.disabled = true;
+    try { await saveCountdown(); }
+    catch (e) { log('倒数日发送失败：' + (e.message || e), 'bad'); }
+    finally { btnCountdown.disabled = false; }
   });
 
   function drawPreview(img) {
@@ -454,6 +562,21 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
     return 1;
   }
 
+  // 空气接口只给逐小时 AQI，按日期聚合成三天的日均值。
+  function dailyAqi(air, dates) {
+    const out = [0, 0, 0];
+    const h = air && air.hourly;
+    if (!h || !Array.isArray(h.time) || !Array.isArray(h.us_aqi)) return out;
+    const sums = [0, 0, 0], counts = [0, 0, 0];
+    h.time.forEach((t, i) => {
+      const di = dates.indexOf(String(t).slice(0, 10));
+      const v = h.us_aqi[i];
+      if (di >= 0 && Number.isFinite(v)) { sums[di] += v; counts[di]++; }
+    });
+    for (let i = 0; i < 3; i++) if (counts[i]) out[i] = Math.round(sums[i] / counts[i]);
+    return out;
+  }
+
   async function fetchJson(url, ms) {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), ms || 10000);
@@ -469,27 +592,37 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
   async function syncWeather() {
     const idx = parseInt(citySel.value, 10);
     const [name, lat, lon] = CITIES[idx];
-    log(`取 ${name} 天气…`);
+    log(`取 ${name} 三天天气…`);
     const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-      `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset` +
-      `&timezone=Asia%2FShanghai&forecast_days=1`;
+      `&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset` +
+      `&timezone=Asia%2FShanghai&forecast_days=3`;
     const w = await fetchJson(wUrl, 10000);
     const temp = Math.round(w.current.temperature_2m);
     const cond = weatherCond(w.current.weather_code);
-    const hi = Math.round(w.daily.temperature_2m_max[0]);
-    const lo = Math.round(w.daily.temperature_2m_min[0]);
-    const rise = minuteOf(w.daily.sunrise[0]);
-    const set = minuteOf(w.daily.sunset[0]);
+    const daily = w.daily;
+    const hi = [0, 1, 2].map(i => Math.round(daily.temperature_2m_max[i]));
+    const lo = [0, 1, 2].map(i => Math.round(daily.temperature_2m_min[i]));
+    const conds = [0, 1, 2].map(i => weatherCond(daily.weather_code[i]));
+    const dates = [0, 1, 2].map(i => daily.time[i]);
+    const rise = minuteOf(daily.sunrise[0]);
+    const set = minuteOf(daily.sunset[0]);
     let aqi = 0;
+    const dayAqi = [0, 0, 0];
     try {
       const aj = await fetchJson(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}` +
-        `&longitude=${lon}&current=us_aqi&timezone=Asia%2FShanghai`, 7000);
-      aqi = Math.round(aj.current.us_aqi || 0);
+        `&longitude=${lon}&current=us_aqi&hourly=us_aqi&timezone=Asia%2FShanghai&forecast_days=3`, 7000);
+      if (aj.current && Number.isFinite(aj.current.us_aqi)) aqi = Math.round(aj.current.us_aqi);
+      const avg = dailyAqi(aj, dates);
+      for (let i = 0; i < 3; i++) dayAqi[i] = avg[i];
+      if (!aqi) aqi = dayAqi[0];
     } catch (_) { aqi = 0; }
     const epoch = deviceEpoch();
-    await send(OP_WEATHER, 0, `${idx},${temp},${cond},${aqi},${hi},${lo}`);
+    const payload = `${idx},${temp},${cond},${aqi},${hi[0]},${lo[0]},` +
+      `${conds[1]},${dayAqi[1]},${hi[1]},${lo[1]},${conds[2]},${dayAqi[2]},${hi[2]},${lo[2]}`;
+    await send(OP_WEATHER3, 0, payload);
     await send(OP_SKY, 0, `${epoch},${rise},${set}`);
-    log(`${name} 已同步：${temp}° ${hi}°/${lo}° AQI ${aqi} 日出 ${rise} 日落 ${set}`);
+    log(`${name} 已同步三天：今天 ${temp}° ${hi[0]}°/${lo[0]}° AQI ${aqi}；` +
+      `明天 ${hi[1]}°/${lo[1]}° AQI ${dayAqi[1]}；后天 ${hi[2]}°/${lo[2]}° AQI ${dayAqi[2]}`);
   }
 
   btnWeather.addEventListener('click', async () => {
